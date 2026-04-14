@@ -1,9 +1,9 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = "madhuriajay/cloudapp:latest"
-    }
+  environment {
+    DOCKER_IMAGE = "madhuriajay/cloudapp:${BUILD_NUMBER}"
+}
 
     stages {
 
