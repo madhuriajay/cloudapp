@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "madhuriajay/cloudapp:latest"
+    }
+
+    stages {
+
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+       stage('Clone Code') {
+    steps {
+        git branch: 'main', url: 'https://github.com/madhuriajay/cloudapp.git'
+    }
+}
+
+        stage('Check Files') {
+            steps {
+                sh 'ls -l'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE .'
+            }
+        }
+
+        stage('Login Docker Hub') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-pass',
+            usernameVariable: 'USER',
+            passwordVariable: 'PASS'
+        )]) {
+            sh 'echo $PASS | docker login -u $USER --password-stdin'
+        }
+    }
+}
+
+        stage('Push Image') {
+            steps {
+                sh 'docker push $DOCKER_IMAGE'
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                sh '''
+                docker stop cloudapp || true
+                docker rm cloudapp || true
+                docker run -d -p 8080:8080 --name cloudapp $DOCKER_IMAGE
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Pipeline Success!"
+        }
+        failure {
+            echo "❌ Pipeline Failed!"
+        }
+    }
+}
