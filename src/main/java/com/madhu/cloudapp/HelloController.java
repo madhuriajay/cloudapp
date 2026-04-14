@@ -8,6 +8,6 @@ public class HelloController {
 
     @GetMapping("/")
     public String home() {
-        return "Miss you..................";
+        return "Hello from CloudApp - Version 2";
     }
 }
